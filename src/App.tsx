@@ -7,13 +7,13 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useTripStore } from "./store/useTripStore";
-import Calendar from "./components/modals/Calendar";
-import ActivityList from "./components/modals/ActivityList";
-import NoteList from "./components/modals/NoteList";
-import ChatBot from "./components/modals/ChatBot";
+import Calendar from "./components/core/Calendar";
+import ActivityList from "./components/activities/ActivityList";
+import NoteList from "./components/notes/NoteList";
+import ChatBot from "./components/core/ChatBot";
 import Button from "./components/ui/Button";
-import ActivityModal from "./components/modals/ActivityModal";
-import NoteModal from "./components/modals/NoteModal";
+import ActivityModal from "./components/activities/ActivityModal";
+import NoteModal from "./components/notes/NoteModal";
 import { Activity, Note } from "./types/trip";
 
 type Tab = "calendar" | "notes" | "assistant";

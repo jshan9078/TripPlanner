@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { Activity } from './activity';
+import { Note } from './note';
 
 export const ActivitySchema = z.object({
   id: z.string(),
@@ -19,12 +21,12 @@ export const NoteSchema = z.object({
 
 export const TripSchema = z.object({
   id: z.string(),
-  title: z.string().min(1, "Title is required"),
+  title: z.string().min(1, "Trip title is required"),
   description: z.string(),
   startDate: z.string(),
   endDate: z.string(),
-  activities: z.array(ActivitySchema),
-  notes: z.array(NoteSchema)
+  activities: z.array(z.any()),
+  notes: z.array(z.any())
 });
 
 export type Activity = z.infer<typeof ActivitySchema>;

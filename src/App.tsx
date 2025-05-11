@@ -7,6 +7,8 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useTripStore } from "./store/useTripStore";
+import { useActivityStore } from "./store/useActivityStore";
+import { useNoteStore } from "./store/useNoteStore";
 import Calendar from "./components/core/Calendar";
 import ActivityList from "./components/activities/ActivityList";
 import NoteList from "./components/notes/NoteList";
@@ -14,7 +16,8 @@ import ChatBot from "./components/core/ChatBot";
 import Button from "./components/ui/Button";
 import ActivityModal from "./components/activities/ActivityModal";
 import NoteModal from "./components/notes/NoteModal";
-import { Activity, Note } from "./types/trip";
+import { Activity } from "./types/activity";
+import { Note } from "./types/note";
 
 type Tab = "calendar" | "notes" | "assistant";
 
@@ -23,21 +26,12 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>("calendar");
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
-  const [editingActivity, setEditingActivity] = useState<
-    Activity | undefined
-  >();
+  const [editingActivity, setEditingActivity] = useState<Activity | undefined>();
   const [editingNote, setEditingNote] = useState<Note | undefined>();
 
-  const {
-    trips,
-    addTrip,
-    addActivity,
-    updateActivity,
-    deleteActivity,
-    addNote,
-    updateNote,
-    deleteNote,
-  } = useTripStore();
+  const { trips, addTrip } = useTripStore();
+  const { activities, addActivity, updateActivity, deleteActivity } = useActivityStore();
+  const { notes, addNote, updateNote, deleteNote } = useNoteStore();
 
   // For demo purposes, create a trip if none exists
   React.useEffect(() => {
@@ -56,10 +50,9 @@ function App() {
 
   const currentTrip = trips[0]; // For demo, we'll use the first trip
 
-  const activitiesForSelectedDate =
-    currentTrip?.activities.filter(
-      (activity) => activity.date === format(selectedDate, "yyyy-MM-dd")
-    ) || [];
+  const activitiesForSelectedDate = activities.filter(
+    (activity) => activity.date === format(selectedDate, "yyyy-MM-dd")
+  );
 
   const handleAddActivity = (data: Omit<Activity, "id" | "tripId">) => {
     if (currentTrip) {
@@ -131,77 +124,60 @@ function App() {
 
       {/* Main Content */}
       <div className="flex-1 p-8">
-        {/* Tabs */}
-        <div className="mb-6 border-b border-gray-200">
-          <div className="flex space-x-4">
-            <button
+        <div className="max-w-4xl mx-auto">
+          <div className="flex space-x-4 mb-8">
+            <Button
+              variant={activeTab === "calendar" ? "primary" : "secondary"}
               onClick={() => setActiveTab("calendar")}
-              className={`py-2 px-4 border-b-2 font-medium text-sm flex items-center ${
-                activeTab === "calendar"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               Calendar
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={activeTab === "notes" ? "primary" : "secondary"}
               onClick={() => setActiveTab("notes")}
-              className={`py-2 px-4 border-b-2 font-medium text-sm flex items-center ${
-                activeTab === "notes"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
             >
               <ListTodo className="w-4 h-4 mr-2" />
               Notes
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={activeTab === "assistant" ? "primary" : "secondary"}
               onClick={() => setActiveTab("assistant")}
-              className={`py-2 px-4 border-b-2 font-medium text-sm flex items-center ${
-                activeTab === "assistant"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
             >
               <MessageSquare className="w-4 h-4 mr-2" />
               Assistant
-            </button>
+            </Button>
           </div>
-        </div>
 
-        {/* Tab Content */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          {activeTab === "calendar" ? (
+          {activeTab === "calendar" && (
             <Calendar
-              activities={currentTrip?.activities || []}
+              activities={activities}
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
             />
-          ) : activeTab === "notes" ? (
+          )}
+
+          {activeTab === "notes" && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Trip Notes
-                </h2>
-                <Button onClick={() => setIsNoteModalOpen(true)}>
-                  <PlusCircle className="w-5 h-5 mr-2" />
+                <h2 className="text-xl font-semibold">Notes</h2>
+                <Button size="sm" onClick={() => setIsNoteModalOpen(true)}>
+                  <PlusCircle className="w-4 h-4 mr-1" />
                   Add Note
                 </Button>
               </div>
               <NoteList
-                notes={currentTrip?.notes || []}
+                notes={notes}
                 onDelete={(id) => deleteNote(currentTrip?.id || "", id)}
                 onEdit={handleEditNote}
               />
             </div>
-          ) : (
-            <ChatBot />
           )}
+
+          {activeTab === "assistant" && <ChatBot />}
         </div>
       </div>
 
-      {/* Modals */}
       <ActivityModal
         isOpen={isActivityModalOpen}
         onClose={() => {
@@ -221,7 +197,6 @@ function App() {
         }}
         onSubmit={editingNote ? handleUpdateNote : handleAddNote}
         initialData={editingNote}
-        selectedDate={format(selectedDate, "yyyy-MM-dd")}
       />
     </div>
   );
